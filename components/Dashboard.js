@@ -121,16 +121,22 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    try {
-      const res = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (res.ok) setUser(null);
-    } catch (error) {
-      console.error('Logout failed:', error);
+  try {
+    const res = await fetch('https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com/api/auth/logout', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    const data = await res.json();
+    if (data.success) {
+      setUser(null);
+    } else {
+      console.error('Logout response error:', data);
     }
-  };
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+};
+
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Please log in to see your dashboard</div>;
