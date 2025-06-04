@@ -19,7 +19,7 @@ export default {
       policy: "appVersion"
     },
     web: {
-      bundler: "metro"
+      bundler: "webpack"
     }
   }
 };
