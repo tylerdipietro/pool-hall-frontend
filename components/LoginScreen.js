@@ -7,7 +7,7 @@ const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl || 'http://localhos
 
 export default function LoginScreen() {
   const handleGoogleLogin = () => {
-    const authUrl = 'https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com/api/auth/google'; // Backend auth URL
+    const authUrl = 'https://api.tylerdipietro.com/api/auth/google'; // Backend auth URL
     Linking.openURL(authUrl);
   };
 

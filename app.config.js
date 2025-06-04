@@ -6,7 +6,7 @@ export default {
     sdkVersion: "50.0.0",
     platforms: ["ios", "android", "web"],
     extra: {
-      apiBaseUrl: "https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com",
+      apiBaseUrl: "https://api.tylerdipietro.com",
       assetPrefix: "./"
     },
     eas: {
