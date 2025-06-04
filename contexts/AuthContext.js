@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  fetch(`${API_BASE_URL}/api/auth/success`, {
+  fetch('https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com/api/auth/google', {
     credentials: 'include', // Important to send cookies/session
   })
   .then((res) => {
