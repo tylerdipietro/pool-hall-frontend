@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.js": "/pool-hall-frontend/static/js/main.c873cc1b.js",
+    "static/js/619.5bac31ec.js": "/pool-hall-frontend/static/js/619.5bac31ec.js",
+    "index.html": "/pool-hall-frontend/index.html",
+    "serve.json": "/pool-hall-frontend/serve.json",
+    "manifest.json": "/pool-hall-frontend/manifest.json",
+    "main.c873cc1b.js.map": "/pool-hall-frontend/static/js/main.c873cc1b.js.map",
+    "619.5bac31ec.js.map": "/pool-hall-frontend/static/js/619.5bac31ec.js.map"
+  },
+  "entrypoints": [
+    "static/js/619.5bac31ec.js",
+    "static/js/main.c873cc1b.js"
+  ]
+}
