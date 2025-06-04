@@ -1,8 +1,5 @@
 {
   "rewrites": [
-    {
-      "source": "/api/:match*",
-      "destination": "https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com/api/:match*"
-    }
+    { "source": "/(.*)", "destination": "/" }
   ]
 }
