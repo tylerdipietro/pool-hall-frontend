@@ -30,6 +30,8 @@ export default function Dashboard() {
   const [newHallLocation, setNewHallLocation] = useState('');
   const [registerError, setRegisterError] = useState('');
   const [registerSuccess, setRegisterSuccess] = useState('');
+  const [newHallTables, setNewHallTables] = useState(1);
+
 
   // Fetch pool halls on mount
   useEffect(() => {
@@ -203,45 +205,36 @@ export default function Dashboard() {
   };
 
   // Register new hall submit handler (unchanged)
-  const handleRegisterHallSubmit = async (e) => {
-    e.preventDefault();
-    setRegisterError('');
+ const handleRegisterHallSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch('https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com/api/pool-halls', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: newHallName,
+        location: newHallLocation,
+        numberOfTables: newHallTables,  // <--- include this here
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setRegisterSuccess('Pool hall registered successfully!');
+      setRegisterError('');
+      // Reset form or close modal
+    } else {
+      setRegisterError(data.message || 'Failed to register pool hall');
+      setRegisterSuccess('');
+    }
+  } catch (error) {
+    setRegisterError('Server error');
     setRegisterSuccess('');
+  }
+};
 
-    if (!newHallName.trim() || !newHallLocation.trim()) {
-      setRegisterError('Please fill in all fields.');
-      return;
-    }
-
-    try {
-      const res = await fetch('https://your-backend/api/pool-halls', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newHallName,
-          location: newHallLocation,
-          adminUserId: user._id,
-        }),
-      });
-      const data = await res.json();
-
-      if (data.success && data.poolHall) {
-        setRegisterSuccess('Pool hall registered successfully!');
-        setNewHallName('');
-        setNewHallLocation('');
-
-        setPoolHalls((prev) => [...prev, data.poolHall]);
-        setSelectedHall(data.poolHall);
-        setRegisterHallMode(false);
-      } else {
-        setRegisterError(data.message || 'Failed to register pool hall.');
-      }
-    } catch (err) {
-      setRegisterError('Error registering pool hall.');
-      console.error(err);
-    }
-  };
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Please log in to see your dashboard</div>;
@@ -305,6 +298,21 @@ export default function Dashboard() {
               />
             </label>
           </div>
+
+          <div style={{ marginBottom: 10 }}>
+  <label>
+    Number of Tables:
+    <input
+      type="number"
+      min="1"
+      value={newHallTables}
+      onChange={(e) => setNewHallTables(Number(e.target.value))}
+      required
+      style={{ width: '100%', padding: 8, marginTop: 4 }}
+    />
+  </label>
+</div>
+
 
           {registerError && <p style={{ color: 'red' }}>{registerError}</p>}
           {registerSuccess && <p style={{ color: 'green' }}>{registerSuccess}</p>}
