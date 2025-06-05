@@ -150,6 +150,10 @@ export default function Dashboard() {
 
       <div style={{ marginBottom: 20 }}>
         <button onClick={handleJoinQueue}>Join Queue</button>{' '}
+        <button onClick={() => socket.emit('leave-queue', { userId: user._id })}>
+  Leave Queue
+</button>
+
         {user.isAdmin && (
           <>
             <button onClick={handleClearQueue} style={{ marginLeft: 10 }}>
