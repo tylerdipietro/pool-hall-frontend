@@ -37,7 +37,10 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchPoolHalls() {
       try {
-        const res = await fetch('https://api.tylerdipietro.com/api/pool-halls'); 
+        const res = await fetch('https://api.tylerdipietro.com/api/pool-halls', {
+  credentials: 'include',
+});
+
         const data = await res.json();
         setPoolHalls(data.poolHalls || []);
       } catch (err) {
