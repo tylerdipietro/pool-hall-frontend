@@ -141,6 +141,10 @@ const removeEntrant = (userId) => {
     });
     const data = await res.json();
     if (data.success) {
+      // Emit logout event on socket to clean up queue/table
+      if (user?._id) {
+        socket.emit('logout', user._id);
+      }
       setUser(null);
     } else {
       console.error('Logout response error:', data);
@@ -149,6 +153,7 @@ const removeEntrant = (userId) => {
     console.error('Logout failed:', error);
   }
 };
+
 
 
   if (loading) return <div>Loading...</div>;
