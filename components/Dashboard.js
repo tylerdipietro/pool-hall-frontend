@@ -114,7 +114,7 @@ export default function Dashboard() {
   };
 
   const handleSkipInvite = () => {
-    socket.emit('skip_invite', { userId: user._id });
+    socket.emit('skip_invite', { userId: user._id, tableId: invitedTableId });
     clearInterval(inviteIntervalRef.current);
     setInviteModalVisible(false);
     setInvitedTableId(null);
