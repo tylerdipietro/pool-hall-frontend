@@ -8,6 +8,10 @@
     "start:web": "expo start --web",
     "android": "expo start --android",
     "ios": "expo start --ios",
+    "dev": "vite",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "preview": "vite preview",
     "predeploy": "expo export:web",
     "deploy": "gh-pages -d web-build"
   },
