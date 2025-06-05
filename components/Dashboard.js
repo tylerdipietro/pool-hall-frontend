@@ -42,7 +42,7 @@ export default function Dashboard() {
 });
 
         const data = await res.json();
-        setPoolHalls(data.poolHalls || []);
+        setPoolHalls(data);
       } catch (err) {
         console.error('Failed to load pool halls', err);
       }
