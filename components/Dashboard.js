@@ -12,37 +12,67 @@ import socket, {
 export default function Dashboard() {
   const { user, setUser, loading } = useContext(AuthContext);
 
+  const [poolHalls, setPoolHalls] = useState([]);
+  const [selectedHall, setSelectedHall] = useState(null);
   const [queue, setQueue] = useState([]);
   const [tables, setTables] = useState([]);
 
-  // Invitation modal state
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [invitedTableId, setInvitedTableId] = useState(null);
   const [inviteTimer, setInviteTimer] = useState(30);
   const inviteIntervalRef = useRef(null);
 
-  // Win request state
   const [winRequest, setWinRequest] = useState(null);
   const [confirmingWin, setConfirmingWin] = useState(false);
 
+  const [registerHallMode, setRegisterHallMode] = useState(false);
+  const [newHallName, setNewHallName] = useState('');
+  const [newHallLocation, setNewHallLocation] = useState('');
+  const [registerError, setRegisterError] = useState('');
+  const [registerSuccess, setRegisterSuccess] = useState('');
+
+  // Fetch pool halls on mount
   useEffect(() => {
-    function handleStateUpdate({ queue, tables }) {
-      console.log('Received state_update with queue:', queue, 'tables:', tables);
-      setQueue(queue);
-      setTables(tables);
+    async function fetchPoolHalls() {
+      try {
+        const res = await fetch('https://your-backend/api/pool-halls'); 
+        const data = await res.json();
+        setPoolHalls(data.poolHalls || []);
+      } catch (err) {
+        console.error('Failed to load pool halls', err);
+      }
+    }
+    fetchPoolHalls();
+  }, []);
+
+  // Join selected hall room & register user on socket connection
+  useEffect(() => {
+    if (!selectedHall || !user?._id) return;
+
+    // Register user with backend socket (must do on every connect/reconnect)
+    if (socket.connected) {
+      socket.emit('register_user', user._id);
+    } else {
+      socket.on('connect', () => {
+        socket.emit('register_user', user._id);
+      });
     }
 
-    function handleInvite(tableId) {
+    // Join hall room
+    socket.emit('join_hall', { hallId: selectedHall._id });
+
+    function handleStateUpdate({ queue: newQueue, tables: newTables }) {
+      setQueue(newQueue);
+      setTables(newTables);
+    }
+
+    function handleInvite({ tableId }) {
       setInvitedTableId(tableId);
       setInviteModalVisible(true);
       setInviteTimer(30);
 
-      // Clear any existing timer
-      if (inviteIntervalRef.current) {
-        clearInterval(inviteIntervalRef.current);
-      }
+      if (inviteIntervalRef.current) clearInterval(inviteIntervalRef.current);
 
-      // Start countdown timer
       inviteIntervalRef.current = setInterval(() => {
         setInviteTimer((prev) => {
           if (prev <= 1) {
@@ -56,26 +86,25 @@ export default function Dashboard() {
     }
 
     function handleWinRequest(data) {
-      console.log('Received win confirmation request:', data);
       setWinRequest(data);
     }
 
     socket.on('state_update', handleStateUpdate);
-    socket.on('table_invite', ({ tableId }) => {
-      handleInvite(tableId);
-    });
+    socket.on('table_invite', handleInvite);
     socket.on('win_confirmation_request', handleWinRequest);
 
     return () => {
-      socket.off('state_update', handleStateUpdate);
-      socket.off('invite:joinTable', handleInvite);
-      socket.off('win_confirmation_request', handleWinRequest);
-      if (inviteIntervalRef.current) {
-        clearInterval(inviteIntervalRef.current);
-      }
-    };
-  }, []);
+      socket.emit('leave_hall', { hallId: selectedHall._id });
 
+      socket.off('state_update', handleStateUpdate);
+      socket.off('table_invite', handleInvite);
+      socket.off('win_confirmation_request', handleWinRequest);
+
+      if (inviteIntervalRef.current) clearInterval(inviteIntervalRef.current);
+    };
+  }, [selectedHall, user]);
+
+  // Win confirmation handlers
   const handleConfirmWin = () => {
     if (!winRequest || confirmingWin) return;
     setConfirmingWin(true);
@@ -85,92 +114,226 @@ export default function Dashboard() {
       winRequest.loserId,
       true,
       (response) => {
-        console.log('Confirm win callback:', response);
         setConfirmingWin(false);
-        if (response?.success) {
-          setWinRequest(null);
-        }
+        if (response?.success) setWinRequest(null);
       }
     );
   };
 
-  const handleRejectWin = () => {
-    setWinRequest(null);
-  };
+  const handleRejectWin = () => setWinRequest(null);
 
+  // Queue & table handlers
   const handleJoinQueue = () => {
-    if (user?._id) joinQueue(user._id);
+    if (user?._id && selectedHall?._id) {
+      joinQueue(user._id, selectedHall._id);
+    }
   };
 
-  const handleClearQueue = () => clearQueue();
-  const handleClearTables = () => clearTables();
+  const handleLeaveQueue = () => {
+    if (user?._id && selectedHall?._id) {
+      socket.emit('leave-queue', { userId: user._id, hallId: selectedHall._id });
+    }
+  };
 
+  const handleClearQueue = () => {
+    if (selectedHall?._id) clearQueue(selectedHall._id);
+  };
+
+  const handleClearTables = () => {
+    if (selectedHall?._id) clearTables(selectedHall._id);
+  };
+
+  // Queue admin moves/removes
   const moveUp = (userId) => {
-  socket.emit('queue_move_up', { userId });
-};
+    if (userId && selectedHall?._id) {
+      socket.emit('queue_move_up', { userId, hallId: selectedHall._id });
+    }
+  };
+  const moveDown = (userId) => {
+    if (userId && selectedHall?._id) {
+      socket.emit('queue_move_down', { userId, hallId: selectedHall._id });
+    }
+  };
+  const removeEntrant = (userId) => {
+    if (userId && selectedHall?._id) {
+      socket.emit('queue_remove', { userId, hallId: selectedHall._id });
+    }
+  };
 
-const moveDown = (userId) => {
-  socket.emit('queue_move_down', { userId });
-};
-
-const removeEntrant = (userId) => {
-  socket.emit('queue_remove', { userId });
-};
-
-
+  // Invite modal accept/skip handlers
   const handleAcceptInvite = () => {
-    if (!invitedTableId) return;
+    if (!invitedTableId || !user?._id) return;
+
     socket.emit('accept_invite', { tableId: invitedTableId, userId: user._id });
-    clearInterval(inviteIntervalRef.current);
+
+    if (inviteIntervalRef.current) clearInterval(inviteIntervalRef.current);
+
     setInviteModalVisible(false);
     setInvitedTableId(null);
   };
 
   const handleSkipInvite = () => {
+    if (!user?._id) return;
+
     socket.emit('skip_invite', { userId: user._id, tableId: invitedTableId });
-    clearInterval(inviteIntervalRef.current);
+
+    if (inviteIntervalRef.current) clearInterval(inviteIntervalRef.current);
+
     setInviteModalVisible(false);
     setInvitedTableId(null);
   };
 
+  // Logout handler
   const handleLogout = async () => {
-  try {
-    const res = await fetch('https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com/api/auth/logout', {
-      method: 'GET',
-      credentials: 'include',
-    });
-    const data = await res.json();
-    if (data.success) {
-      // Emit logout event on socket to clean up queue/table
-      if (user?._id) {
-        socket.emit('logout', user._id);
+    try {
+      const res = await fetch('https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com/api/auth/logout', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (user?._id) socket.emit('logout', user._id);
+        setUser(null);
+      } else {
+        console.error('Logout response error:', data);
       }
-      setUser(null);
-    } else {
-      console.error('Logout response error:', data);
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
-  } catch (error) {
-    console.error('Logout failed:', error);
-  }
-};
+  };
 
+  // Register new hall submit handler (unchanged)
+  const handleRegisterHallSubmit = async (e) => {
+    e.preventDefault();
+    setRegisterError('');
+    setRegisterSuccess('');
 
+    if (!newHallName.trim() || !newHallLocation.trim()) {
+      setRegisterError('Please fill in all fields.');
+      return;
+    }
+
+    try {
+      const res = await fetch('https://your-backend/api/pool-halls', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newHallName,
+          location: newHallLocation,
+          adminUserId: user._id,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.success && data.poolHall) {
+        setRegisterSuccess('Pool hall registered successfully!');
+        setNewHallName('');
+        setNewHallLocation('');
+
+        setPoolHalls((prev) => [...prev, data.poolHall]);
+        setSelectedHall(data.poolHall);
+        setRegisterHallMode(false);
+      } else {
+        setRegisterError(data.message || 'Failed to register pool hall.');
+      }
+    } catch (err) {
+      setRegisterError('Error registering pool hall.');
+      console.error(err);
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Please log in to see your dashboard</div>;
 
+  if (!selectedHall && !registerHallMode) {
+    return (
+      <div style={{ maxWidth: 500, margin: '0 auto', padding: 20 }}>
+        <h2>Select a Pool Hall</h2>
+        {poolHalls.length === 0 ? (
+          <p>No pool halls available.</p>
+        ) : (
+          <ul>
+            {poolHalls.map((hall) => (
+              <li key={hall._id} style={{ marginBottom: 10 }}>
+                <button onClick={() => setSelectedHall(hall)}>{hall.name}</button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {user.isAdmin && (
+          <button onClick={() => setRegisterHallMode(true)} style={{ marginTop: 20 }}>
+            Register New Pool Hall
+          </button>
+        )}
+
+        <button onClick={handleLogout} style={{ marginTop: 20 }}>
+          Logout
+        </button>
+      </div>
+    );
+  }
+
+  if (registerHallMode) {
+    return (
+      <div style={{ maxWidth: 500, margin: '0 auto', padding: 20 }}>
+        <h2>Register New Pool Hall</h2>
+        <form onSubmit={handleRegisterHallSubmit}>
+          <div style={{ marginBottom: 10 }}>
+            <label>
+              Name:
+              <input
+                type="text"
+                value={newHallName}
+                onChange={(e) => setNewHallName(e.target.value)}
+                required
+                style={{ width: '100%', padding: 8, marginTop: 4 }}
+              />
+            </label>
+          </div>
+
+          <div style={{ marginBottom: 10 }}>
+            <label>
+              Location:
+              <input
+                type="text"
+                value={newHallLocation}
+                onChange={(e) => setNewHallLocation(e.target.value)}
+                required
+                style={{ width: '100%', padding: 8, marginTop: 4 }}
+              />
+            </label>
+          </div>
+
+          {registerError && <p style={{ color: 'red' }}>{registerError}</p>}
+          {registerSuccess && <p style={{ color: 'green' }}>{registerSuccess}</p>}
+
+          <button type="submit" style={{ marginRight: 10 }}>
+            Register Pool Hall
+          </button>
+          <button type="button" onClick={() => setRegisterHallMode(false)}>
+            Cancel
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}>
       <h2>Welcome, {user.displayName || user.username}</h2>
+      <h3>Pool Hall: {selectedHall.name}</h3>
+      <button onClick={() => setSelectedHall(null)} style={{ marginBottom: 10 }}>
+        Change Pool Hall
+      </button>
       <button onClick={handleLogout} style={{ marginBottom: 20 }}>
         Logout
       </button>
 
       <div style={{ marginBottom: 20 }}>
         <button onClick={handleJoinQueue}>Join Queue</button>{' '}
-        <button onClick={() => socket.emit('leave-queue', { userId: user._id })}>
-  Leave Queue
-</button>
+        <button onClick={handleLeaveQueue}>Leave Queue</button>
 
         {user.isAdmin && (
           <>
@@ -185,30 +348,30 @@ const removeEntrant = (userId) => {
       </div>
 
       <h3>Queue:</h3>
-{queue.length === 0 ? (
-  <p>The queue is currently empty.</p>
-) : (
-  <ol>
-    {queue.map((entry, index) => (
-      <li key={entry.user?._id || entry.userId || index}>
-        {entry.user?.username || 'Unnamed User'}
+      {queue.length === 0 ? (
+        <p>The queue is currently empty.</p>
+      ) : (
+        <ol>
+          {queue.map((entry, index) => (
+            <li key={entry.user?._id || entry.userId || index}>
+              {entry.user?.username || 'Unnamed User'}
 
-        {user?.isAdmin && (
-          <>
-            {' '}
-            {index > 0 && (
-              <button onClick={() => moveUp(entry.user?._id || entry.userId)}>⬆️</button>
-            )}
-            {index < queue.length - 1 && (
-              <button onClick={() => moveDown(entry.user?._id || entry.userId)}>⬇️</button>
-            )}
-            <button onClick={() => removeEntrant(entry.user?._id || entry.userId)}>❌</button>
-          </>
-        )}
-      </li>
-    ))}
-  </ol>
-)}
+              {user?.isAdmin && (
+                <>
+                  {' '}
+                  {index > 0 && (
+                    <button onClick={() => moveUp(entry.user?._id || entry.userId)}>⬆️</button>
+                  )}
+                  {index < queue.length - 1 && (
+                    <button onClick={() => moveDown(entry.user?._id || entry.userId)}>⬇️</button>
+                  )}
+                  <button onClick={() => removeEntrant(entry.user?._id || entry.userId)}>❌</button>
+                </>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
 
       <h3>Tables:</h3>
       <div
@@ -239,7 +402,11 @@ const removeEntrant = (userId) => {
           }}
         >
           <h4>Your opponent claims they won. Confirm?</h4>
-          <button onClick={handleConfirmWin} disabled={confirmingWin} style={{ marginRight: 10 }}>
+          <button
+            onClick={handleConfirmWin}
+            disabled={confirmingWin}
+            style={{ marginRight: 10 }}
+          >
             {confirmingWin ? 'Confirming...' : 'Confirm'}
           </button>
           <button onClick={handleRejectWin}>Reject</button>
