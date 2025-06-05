@@ -24,6 +24,7 @@ export default function Dashboard() {
   // Win request state
   const [winRequest, setWinRequest] = useState(null);
   const [confirmingWin, setConfirmingWin] = useState(false);
+  const [waitingConfirmation, setWaitingConfirmation] = useState(false);
 
   useEffect(() => {
     function handleStateUpdate({ queue, tables }) {
@@ -59,6 +60,12 @@ export default function Dashboard() {
       console.log('Received win confirmation request:', data);
       setWinRequest(data);
     }
+
+    // When winner clicks "I WON"
+const handleClaimWin = (tableId) => {
+  socket.emit('claim_win', { tableId });
+  setWaitingConfirmation(true); // show waiting modal
+};
 
     socket.on('state_update', handleStateUpdate);
     socket.on('table_invite', ({ tableId }) => {
@@ -154,6 +161,19 @@ const removeEntrant = (userId) => {
   }
 };
 
+useEffect(() => {
+  socket.on('win_confirmed', () => {
+    setWaitingConfirmation(false);
+  });
+  socket.on('win_denied', () => {
+    setWaitingConfirmation(false);
+  });
+
+  return () => {
+    socket.off('win_confirmed');
+    socket.off('win_denied');
+  };
+}, []);
 
 
   if (loading) return <div>Loading...</div>;
@@ -223,6 +243,13 @@ const removeEntrant = (userId) => {
           <TableCard key={table._id ?? table.tableNumber ?? index} table={table} />
         ))}
       </div>
+
+      {waitingConfirmation && (
+  <Modal onClose={() => setWaitingConfirmation(false)}>
+    <h2>Waiting for confirmation</h2>
+    <p>Your opponent has been notified and needs to confirm the win.</p>
+  </Modal>
+)}
 
       {/* Win Confirmation Modal */}
       {winRequest && (
