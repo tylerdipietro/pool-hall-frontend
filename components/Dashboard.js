@@ -210,14 +210,16 @@ export default function Dashboard() {
 
   try {
     const response = await fetch('https://api.tylerdipietro.com/api/pool-halls', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: newHallName,
-        location: newHallLocation,
-        numberOfTables: newHallTables,  // <--- include this here
-      }),
-    });
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',  // Important to send cookies
+  body: JSON.stringify({
+    name: newHallName,
+    location: newHallLocation,
+    numberOfTables: newHallTables,
+  }),
+});
+
 
     const data = await response.json();
 
