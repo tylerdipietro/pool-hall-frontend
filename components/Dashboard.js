@@ -37,7 +37,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchPoolHalls() {
       try {
-        const res = await fetch('https://your-backend/api/pool-halls'); 
+        const res = await fetch('https://api.tylerdipietro.com/api/pool-halls'); 
         const data = await res.json();
         setPoolHalls(data.poolHalls || []);
       } catch (err) {
@@ -188,7 +188,7 @@ export default function Dashboard() {
   // Logout handler
   const handleLogout = async () => {
     try {
-      const res = await fetch('https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com/api/auth/logout', {
+      const res = await fetch('https://api.tylerdipietro.com/api/auth/logout', {
         method: 'GET',
         credentials: 'include',
       });
@@ -209,7 +209,7 @@ export default function Dashboard() {
   e.preventDefault();
 
   try {
-    const response = await fetch('https://pool-hall-waitlist-3b8c64cbf25d.herokuapp.com/api/pool-halls', {
+    const response = await fetch('https://api.tylerdipietro.com/api/pool-halls', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
