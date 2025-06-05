@@ -105,6 +105,19 @@ export default function Dashboard() {
   const handleClearQueue = () => clearQueue();
   const handleClearTables = () => clearTables();
 
+  const moveUp = (userId) => {
+  socket.emit('queue_move_up', { userId });
+};
+
+const moveDown = (userId) => {
+  socket.emit('queue_move_down', { userId });
+};
+
+const removeEntrant = (userId) => {
+  socket.emit('queue_remove', { userId });
+};
+
+
   const handleAcceptInvite = () => {
     if (!invitedTableId) return;
     socket.emit('accept_invite', { tableId: invitedTableId, userId: user._id });
@@ -167,17 +180,30 @@ export default function Dashboard() {
       </div>
 
       <h3>Queue:</h3>
-      {queue.length === 0 ? (
-        <p>The queue is currently empty.</p>
-      ) : (
-        <ol>
-          {queue.map((entry, index) => (
-            <li key={entry.user?._id || entry.userId || index}>
-              {entry.user?.username || 'Unnamed User'}
-            </li>
-          ))}
-        </ol>
-      )}
+{queue.length === 0 ? (
+  <p>The queue is currently empty.</p>
+) : (
+  <ol>
+    {queue.map((entry, index) => (
+      <li key={entry.user?._id || entry.userId || index}>
+        {entry.user?.username || 'Unnamed User'}
+
+        {user?.isAdmin && (
+          <>
+            {' '}
+            {index > 0 && (
+              <button onClick={() => moveUp(entry.user?._id || entry.userId)}>⬆️</button>
+            )}
+            {index < queue.length - 1 && (
+              <button onClick={() => moveDown(entry.user?._id || entry.userId)}>⬇️</button>
+            )}
+            <button onClick={() => removeEntrant(entry.user?._id || entry.userId)}>❌</button>
+          </>
+        )}
+      </li>
+    ))}
+  </ol>
+)}
 
       <h3>Tables:</h3>
       <div
