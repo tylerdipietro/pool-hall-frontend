@@ -54,14 +54,15 @@ export default function Dashboard() {
   useEffect(() => {
     if (!selectedHall || !user?._id) return;
 
-    // Register user with backend socket (must do on every connect/reconnect)
-    if (socket.connected) {
-      socket.emit('register_user', user._id);
-    } else {
-      socket.on('connect', () => {
-        socket.emit('register_user', user._id);
-      });
-    }
+  console.log('[register_user] Attempting with userId:', user._id);
+
+  if (socket.connected) {
+    socket.emit('register_user', { userId: user._id });
+  } else {
+    socket.once('connect', () => {
+      socket.emit('register_user', { userId: user._id });
+    });
+  }
 
     // Join hall room
     socket.emit('join_hall', { hallId: selectedHall._id });
