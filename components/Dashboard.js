@@ -67,6 +67,7 @@ export default function Dashboard() {
     socket.emit('join_hall', { hallId: selectedHall._id });
 
     function handleStateUpdate({ queue: newQueue, tables: newTables }) {
+      console.log('Received state update: ', { newQueue, newTables })
       setQueue(newQueue);
       setTables(newTables);
     }
