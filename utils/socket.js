@@ -50,12 +50,12 @@ export const confirmWin = (tableId, winnerId, loserId, confirmed, cb) => {
 
 // Admin clears the queue for a hall
 export function clearQueue(hall) {
-  emit('admin:clear_queue', { hall });
+  emit('clear-queue', { hall });
 }
 
 // Admin clears all tables for a hall
 export function clearTables(hall) {
-  emit('admin:clear_tables', { hall });
+  emit('clear-tables', { hall });
 }
 
 // Admin forcibly removes a player from a table

@@ -143,11 +143,23 @@ export default function Dashboard() {
   };
 
   const handleClearQueue = () => {
-    if (selectedHall?._id) clearQueue(selectedHall._id);
+    socket.emit('clear-queue', {}, (response) => {
+      if (response.success) {
+        console.log('Queue cleared');
+      } else {
+        console.error('Failed to clear queue:', response.message);
+      }
+    });
   };
 
   const handleClearTables = () => {
-    if (selectedHall?._id) clearTables(selectedHall._id);
+    socket.emit('clear-tables', {}, (response) => {
+      if (response.success) {
+        console.log('Tables cleared');
+      } else {
+        console.error('Failed to clear tables:', response.message);
+      }
+    });
   };
 
   // Queue admin moves/removes
