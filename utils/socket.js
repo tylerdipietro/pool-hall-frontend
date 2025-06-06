@@ -21,14 +21,14 @@ function emit(event, payload) {
 }
 
 // Client joins the matchmaking queue in a hall
-export function joinQueue(userId, hallId) {
-  console.log('joinQueue called with', { userId, hallId });
-  emit('join_queue', { userId, hallId });
+export function joinQueue(userId, hall) {
+  console.log('joinQueue called with', { userId, hall });
+  emit('join_queue', { userId, hall });
 }
 
 // Client leaves the queue in a hall
-export function leaveQueue(userId, hallId) {
-  emit('leave_queue', { userId, hallId });
+export function leaveQueue(userId, hall) {
+  emit('leave_queue', { userId, hall });
 }
 
 // Client joins a specific table
@@ -49,13 +49,13 @@ export const confirmWin = (tableId, winnerId, loserId, confirmed, cb) => {
 };
 
 // Admin clears the queue for a hall
-export function clearQueue(hallId) {
-  emit('admin:clear_queue', { hallId });
+export function clearQueue(hall) {
+  emit('admin:clear_queue', { hall });
 }
 
 // Admin clears all tables for a hall
-export function clearTables(hallId) {
-  emit('admin:clear_tables', { hallId });
+export function clearTables(hall) {
+  emit('admin:clear_tables', { hall });
 }
 
 // Admin forcibly removes a player from a table
@@ -64,18 +64,18 @@ export function removePlayer(tableId, userId) {
 }
 
 // Admin moves a user up in the queue for a hall
-export function moveUp(userId, hallId) {
-  emit('queue_move_up', { userId, hallId });
+export function moveUp(userId, hall) {
+  emit('queue_move_up', { userId, hall });
 }
 
 // Admin moves a user down in the queue for a hall
-export function moveDown(userId, hallId) {
-  emit('queue_move_down', { userId, hallId });
+export function moveDown(userId, hall) {
+  emit('queue_move_down', { userId, hall });
 }
 
 // Admin removes a user from the queue for a hall
-export function removeEntrant(userId, hallId) {
-  emit('queue_remove', { userId, hallId });
+export function removeEntrant(userId, hall) {
+  emit('queue_remove', { userId, hall });
 }
 
 export default initSocket();
