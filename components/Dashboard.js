@@ -57,15 +57,15 @@ export default function Dashboard() {
   console.log('[register_user] Attempting with userId:', user._id);
 
   if (socket.connected) {
-    socket.emit('register_user', { userId: user._id });
+    socket.emit('register_user', { userId: user._id, hall: selectedHall._id });
   } else {
     socket.once('connect', () => {
-      socket.emit('register_user', { userId: user._id });
+      socket.emit('register_user', { userId: user._id, hall: selectedHall._id });
     });
   }
 
     // Join hall room
-    socket.emit('join_hall', { hallId: selectedHall._id });
+    socket.emit('join_hall', { hall: selectedHall._id });
 
     function handleStateUpdate({ queue: newQueue, tables: newTables }) {
       console.log('Received state update: ', { newQueue, newTables })
