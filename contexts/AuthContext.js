@@ -6,6 +6,7 @@
 
     // Define constants for API base URL and AsyncStorage key
     const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl || 'http://localhost:3000';
+     console.log('Frontend API_BASE_URL:', API_BASE_URL); 
     const AUTH_TOKEN_KEY = 'jwt_token';
 
     // Create the AuthContext
@@ -38,6 +39,7 @@
           clientId: googleClientId,
           redirectUri: redirectUri, // Use the manually forced URI
           scopes: ['profile', 'email'],
+          useProxy: false,
         }// Keep this, as it influences the provider's behavior with Expo's proxy
       );
 
