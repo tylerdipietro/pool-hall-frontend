@@ -14,27 +14,7 @@ function AppInner() {
   const [queue, setQueue] = useState([]);
   const [tables, setTables] = useState([]);
   const [socket, setSocket] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // On app load, check if user session exists
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/api/auth/success`, {
-      credentials: 'include',  // Important to send cookies
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
-      })
-      .catch(err => {
-        console.error('Auth check failed:', err);
-        setUser(null);
-      })
-      .finally(() => setLoading(false));
-  }, [setUser]);
+ 
 
   // Setup socket only if user is logged in
   useEffect(() => {
