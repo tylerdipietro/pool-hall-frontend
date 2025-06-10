@@ -202,24 +202,7 @@ export default function Dashboard() {
     setInvitedTableId(null);
   };
 
-  // Logout handler
-  const handleLogout = async () => {
-    try {
-      const res = await fetch('https://api.tylerdipietro.com/api/auth/logout', {
-        method: 'GET',
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (data.success) {
-        if (user?._id) socket.emit('logout', user._id);
-        setUser(null);
-      } else {
-        console.error('Logout response error:', data);
-      }
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
+  
 
   // Register new hall submit handler (unchanged)
  const handleRegisterHallSubmit = async (e) => {
@@ -354,7 +337,7 @@ export default function Dashboard() {
       <button onClick={() => setSelectedHall(null)} style={{ marginBottom: 10 }}>
         Change Pool Hall
       </button>
-      <button onClick={handleLogout} style={{ marginBottom: 20 }}>
+      <button onClick={logout} style={{ marginBottom: 20 }}>
         Logout
       </button>
 
