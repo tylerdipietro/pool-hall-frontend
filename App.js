@@ -14,6 +14,8 @@ function AppInner() {
   const [queue, setQueue] = useState([]);
   const [tables, setTables] = useState([]);
   const [socket, setSocket] = useState(null);
+  const [loading, setLoading] = useState(true);
+
  
 
   // Setup socket only if user is logged in
