@@ -149,7 +149,7 @@
       // Public login function to trigger the Google OAuth flow
       const login = () => {
         // Only prompt if the request object and the forcedRedirectUri are ready
-        if (request && forcedRedirectUri) {
+        if (request && redirectUri) {
           promptAsync();
         } else {
           console.warn('Google Auth request or redirect URI not ready.');
