@@ -30,9 +30,6 @@ export default {
     },
     runtimeVersion: {
       policy: "appVersion",
-    },
-    web: {
-      bundler: "webpack",
-    },
+    }
   },
 };
