@@ -6,8 +6,8 @@
   "scripts": {
     "start": "expo start",
     "start:web": "expo start --web",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
@@ -17,9 +17,10 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
-    "@expo/webpack-config": "~19.0.1",
-    "expo": "^53.0.0",
+    "expo": "^53.0.11",
+    "expo-auth-session": "~6.2.0",
     "expo-linking": "~7.1.5",
+    "expo-random": "^14.0.1",
     "expo-status-bar": "~2.2.3",
     "expo-updates": "~0.28.14",
     "react": "19.0.0",
@@ -27,7 +28,9 @@
     "react-native": "0.79.3",
     "react-native-svg": "15.11.2",
     "react-native-web": "^0.20.0",
-    "socket.io-client": "^4.6.1"
+    "socket.io-client": "^4.6.1",
+    "@react-native-async-storage/async-storage": "2.1.2",
+    "expo-dev-client": "~5.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

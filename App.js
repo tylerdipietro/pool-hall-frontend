@@ -1,3 +1,4 @@
+import 'expo-dev-client';
 import React, { useState, useEffect, useContext } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, Platform } from 'react-native';
 import Dashboard from './components/Dashboard';
