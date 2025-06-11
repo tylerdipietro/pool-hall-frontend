@@ -22,6 +22,8 @@ export function AuthProvider({ children }) {
     path: 'auth',
   });
 
+   console.log('AuthContext: Generated Redirect URI:', redirectUri);
+   
   const [request, response, promptAsync] = Google.useAuthRequest(
     {
       clientId: googleClientId,
