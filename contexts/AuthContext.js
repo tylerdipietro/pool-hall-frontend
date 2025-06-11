@@ -3,12 +3,15 @@ import Constants from 'expo-constants';
 import * as Google from 'expo-auth-session/providers/google';
 import { makeRedirectUri } from 'expo-auth-session';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl || 'http://localhost:3000';
 console.log('Frontend API_BASE_URL:', API_BASE_URL);
 const AUTH_TOKEN_KEY = 'jwt_token';
 
 export const AuthContext = createContext();
+
+WebBrowser.maybeCompleteAuthSession();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
