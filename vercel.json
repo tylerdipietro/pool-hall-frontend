@@ -1,19 +1,53 @@
 {
   "buildCommand": "npx expo export -p web",
-  "outputDirectory": "dist",
+  "outputDirectory": "dist", // Confirmed: Vercel will look in 'dist' for static files
   "devCommand": "expo start",
   "cleanUrls": true,
   "framework": null,
+  "headers": [
+    {
+      "source": "/index.html", // Applies headers directly to the served index.html file
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
+        },
+        {
+          "key": "Pragma", // Older header, but good for maximum compatibility
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires", // Older header, forces immediate expiration
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "source": "/auth", // Applies these headers to requests for the /auth path itself
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:match*",
       "destination": "https://api.tylerdipietro.com/api/:match*"
     },
     {
-      "source": "/:path*",
-      "destination": "/"
-    },
-    { "source": "/auth", "destination": "/web-build/index.html" },
-    { "source": "/(.*)", "destination": "/web-build/index.html" }
+      "source": "/(.*)",
+      "destination": "/dist/index.html" // CORRECTED: Points to 'dist/index.html'
+    }
   ]
 }
