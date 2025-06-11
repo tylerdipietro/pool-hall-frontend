@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
       clientId: googleClientId,
       redirectUri: redirectUri,
       scopes: ['profile', 'email'],
-      useProxy: false,
+      useProxy: true,
     }
   );
 
