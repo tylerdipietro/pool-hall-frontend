@@ -13,7 +13,7 @@
       "source": "/:path*",
       "destination": "/"
     },
-    { "source": "/auth", "destination": "/index.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/auth", "destination": "/web-build/index.html" },
+    { "source": "/(.*)", "destination": "/web-build/index.html" }
   ]
 }
