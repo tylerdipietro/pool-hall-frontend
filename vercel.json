@@ -1,12 +1,12 @@
 {
   "buildCommand": "npx expo export -p web",
-  "outputDirectory": "dist",
+  "outputDirectory": "dist", // This tells Vercel where your build output is
   "devCommand": "expo start",
   "cleanUrls": true,
   "framework": null,
   "headers": [
     {
-      "source": "/index.html",
+      "source": "/index.html", // Applies headers directly to the served index.html file
       "headers": [
         {
           "key": "Cache-Control",
@@ -23,7 +23,7 @@
       ]
     },
     {
-      "source": "/auth",
+      "source": "/auth", // Applies headers to requests for the /auth path (before rewrite)
       "headers": [
         {
           "key": "Cache-Control",
@@ -45,9 +45,11 @@
       "source": "/api/:match*",
       "destination": "https://api.tylerdipietro.com/api/:match*"
     },
+    // This rewrite now explicitly handles all client-side routes,
+    // ensuring the main index.html (which is at the root of the 'dist' output) is served.
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/index.html" // This refers to index.html at the *root of the deployed content* (which is your 'dist' folder's content)
     }
   ]
 }
